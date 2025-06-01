@@ -7,7 +7,7 @@
 class LoggerTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        std::remove("application.log"); // Удаляем старый лог-файл
+       // std::remove("application.log"); // Удаляем старый лог-файл
     }
 
     bool fileExists(const std::string& filename) {
@@ -29,6 +29,10 @@ protected:
 };
 
 TEST_F(LoggerTest, SingletonInstanceWorks) {
+    char cwd[1024];
+    getcwd(cwd, sizeof(cwd));
+    std::cout << "Current working directory: " << cwd << std::endl;
+
     Logger& logger1 = Logger::instance();
     Logger& logger2 = Logger::instance();
     EXPECT_EQ(&logger1, &logger2);

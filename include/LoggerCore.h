@@ -16,7 +16,7 @@ protected:
     
     LoggerCore(const LoggerCore&) = delete;
     LoggerCore& operator=(const LoggerCore&) = delete;
-    static std::mutex sMutex;
+    static std::recursive_mutex sMutex;
     std::ofstream mOutputStream;
 };
 

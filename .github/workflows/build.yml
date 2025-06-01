@@ -1,47 +1,60 @@
-name: Build and Test
+name: Build, Test, Package and Release
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libgtest-dev wget gnupg dpkg-dev
 
-    - name: Configure and Build
-      run: |
-        mkdir build
-        cd build
-        cmake ..
-        make
+      - name: Configure CMake
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
 
-    - name: Run tests
-      run: |
-        cd build
-        ctest --output-on-failure
+      - name: Build project
+        run: |
+          cd build
+          make
 
-    - name: Create DEB package
-      run: |
-        mkdir -p pkg/usr/bin
-        cp build/logger_app pkg/usr/bin/
-        mkdir -p pkg/DEBIAN
-        echo "Package: logger-app" > pkg/DEBIAN/control
-        echo "Version: 1.0" >> pkg/DEBIAN/control
-        echo "Section: utils" >> pkg/DEBIAN/control
-        echo "Priority: optional" >> pkg/DEBIAN/control
-        echo "Architecture: amd64" >> pkg/DEBIAN/control
-        echo "Maintainer: Your Name <your.email@example.com>" >> pkg/DEBIAN/control
-        echo "Description: A simple logger application" >> pkg/DEBIAN/control
-        dpkg-deb --build pkg logger-app.deb
+      - name: Run tests
+        run: |
+          cd build
+          ctest --verbose
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: logger-package
-        path: build/logger-app.deb
+      - name: Create deb package
+        run: |
+          mkdir -p logger_deb_package/DEBIAN
+          cat > logger_deb_package/DEBIAN/control << EOF
+          Package: logger-app
+          Version: 1.0
+          Section: base
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Your Name <your.email@example.com>
+          Description: Simple logger application
+          Depends: libc6
+          EOF
+
+          mkdir -p logger_deb_package/usr/bin/
+          cp build/logger_app logger_deb_package/usr/bin/
+
+          dpkg-deb --build logger_deb_package logger_app.deb
+
+      - name: Upload deb package as a release asset
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ github.run_number }}
+          files: logger_app.deb
+          generateReleaseNotes: true

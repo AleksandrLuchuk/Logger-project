@@ -1,8 +1,9 @@
 #include "LoggerCore.h"
 #include <ctime>
 #include <stdexcept>
+#include <iostream>
 
-std::mutex LoggerCore::sMutex;
+std::recursive_mutex LoggerCore::sMutex;
 
 LoggerCore::LoggerCore(const std::string& filename) {
     mOutputStream.open(filename, std::ios_base::app);
@@ -16,8 +17,9 @@ LoggerCore::~LoggerCore() {
 }
 
 void LoggerCore::logHelper(const std::string& inMessage, const std::string& inLogLevel) {
-    std::lock_guard<std::mutex> guard(sMutex);
+    std::lock_guard<std::recursive_mutex> guard(sMutex);
     mOutputStream << currentDateTime() << ": " << inLogLevel << ": " << inMessage << std::endl;
+    mOutputStream.flush();
 }
 
 std::string LoggerCore::currentDateTime() const {
