@@ -77,4 +77,3 @@ EOF
           asset_path: logger_app_1.0_amd64.deb
           asset_name: logger_app_1.0_amd64.deb
           asset_content_type: application/vnd.debian.binary-package
-#рабочий
