@@ -56,5 +56,12 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ github.run_number }}
-          files: logger_app.deb
+          artifacts: logger_app.deb
           generateReleaseNotes: true
+          token: ${{ secrets.SECRET_TOCKEN }}
+
+      - name: Post Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Complete job
+        run: echo "Build, test, package, and release completed successfully."
